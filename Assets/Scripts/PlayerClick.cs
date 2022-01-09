@@ -33,7 +33,7 @@ public class PlayerClick : MonoBehaviour
 
         if (Physics.Raycast(ray, out _raycastHit, 100f))
         {
-            if (_raycastHit.collider.TryGetComponent(out GridPart gridPart))
+            if (_raycastHit.collider.TryGetComponent(out MoveGridPart gridPart))
             {
                 var isAllowMoveTo = gridPart.MoveTo();
 

@@ -19,7 +19,7 @@ public class Pawn : MonoBehaviour
     }
 
 
-    public void MoveToPart(GridPart gridPart)
+    public void MoveToPart(MoveGridPart gridPart)
     {
         _currentPos = gridPart.GridPos;
 
@@ -27,7 +27,7 @@ public class Pawn : MonoBehaviour
     }
 
 
-    public void SetUp(Material material, GridPart gridPart, bool isPlayer)
+    public void SetUp(Material material, MoveGridPart gridPart, bool isPlayer)
     {
         _isPlayer = isPlayer;
 

@@ -7,7 +7,7 @@ public class GameController : MonoBehaviour
     private const float TIME_TO_MOVE = 30f;
 
     [SerializeField]
-    private Grid _grid;
+    private GridController _grid;
 
     private int _playerCount;
     private int _currentPlayer;

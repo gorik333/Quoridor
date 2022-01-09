@@ -4,9 +4,9 @@ using UnityEngine;
 
 public static class AI
 {
-    public static GridPart NextMove(List<GridPart> gridParts, Vector2Int pawnPos)
+    public static MoveGridPart NextMove(List<MoveGridPart> gridParts, Vector2Int pawnPos)
     {
-        GridPart move = gridParts[0];
+        MoveGridPart move = null;
 
         var possibleMove = new Vector2Int(pawnPos.x, pawnPos.y - 1);
 
@@ -15,6 +15,8 @@ public static class AI
             if (gridParts[i].GridPos == possibleMove)
             {
                 move = gridParts[i];
+
+                break;
             }
         }
 
