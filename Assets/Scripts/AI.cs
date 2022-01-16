@@ -2,24 +2,77 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public struct BestMoves
+{
+    public Vector2Int MovePos;
+    public int MoveCountToWin;
+
+    public BestMoves(Vector2Int movePos, int moveCountToWin)
+    {
+        MovePos = movePos;
+        MoveCountToWin = moveCountToWin;
+    }
+}
+
+
 public static class AI
 {
-    public static MoveGridPart NextMove(List<MoveGridPart> gridParts, Vector2Int pawnPos)
+    //private static Direction _mainDirection = Direction.Bottom;
+
+    private const int MAX_MOVES_COUNT = 100;
+
+    public static MoveGridPart NextMove(List<MoveGridPart> moveGridParts, MoveGridPart startMoveGrid)
     {
         MoveGridPart move = null;
 
-        var possibleMove = new Vector2Int(pawnPos.x, pawnPos.y - 1);
+        var bestMoves = new List<BestMoves>();
 
-        for (int i = 0; i < gridParts.Count; i++)
+        var movesNeeded = 0;
+
+        //Vector2Int possibleMove = new Vector2Int(currentMoveGrid.GridPos.x, currentMoveGrid.GridPos.y - 1);
+
+        var currentMoveGrid = startMoveGrid;
+
+        for (int k = 0; k < MAX_MOVES_COUNT; k++)
         {
-            if (gridParts[i].GridPos == possibleMove)
+            for (int i = 0; i < moveGridParts.Count; i++)
             {
-                move = gridParts[i];
+                var possibleMoves = PossibleMove.GetPossibleMoves(moveGridParts, currentMoveGrid, Direction.Bottom);
 
-                break;
+                for (int j = 0; j < possibleMoves.Count; j++)
+                {
+                    if (moveGridParts[i].GridPos == possibleMoves[j] && !moveGridParts[i].IsWithPawn)
+                    {
+                        currentMoveGrid = moveGridParts[i];
+
+                        Debug.Log(currentMoveGrid.GridPos);
+
+                        movesNeeded++;
+
+                        break;
+                    }
+                }
+
+                if (currentMoveGrid.GridPos.y == 1)
+                {
+                    Debug.Log(movesNeeded);
+
+                    move = moveGridParts[i];
+
+                    break;
+                }
             }
         }
 
         return move;
+    }
+
+
+    private static int MovesNeeded()
+    {
+
+
+
+        return 0;
     }
 }

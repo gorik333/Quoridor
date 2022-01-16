@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class PlayerClick : MonoBehaviour
 {
+    [SerializeField]
+    private GridController _gridController;
+
     private Camera _camera;
 
     private RaycastHit _raycastHit;
@@ -35,10 +38,7 @@ public class PlayerClick : MonoBehaviour
         {
             if (_raycastHit.collider.TryGetComponent(out MoveGridPart gridPart))
             {
-                var isAllowMoveTo = gridPart.MoveTo();
-
-                if (!isAllowMoveTo)
-                    DenyActions();
+                _gridController.PlayerMove(gridPart);
             }
         }
     }

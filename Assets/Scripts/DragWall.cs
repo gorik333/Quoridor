@@ -14,6 +14,9 @@ public class DragWall : MonoBehaviour
     [SerializeField]
     private GameObject _wallPrefab;
 
+    [SerializeField]
+    private GridController _gridController;
+
     #endregion
 
     private Camera _camera;
@@ -85,7 +88,7 @@ public class DragWall : MonoBehaviour
 
     public void OnEndDrag()
     {
-        if (_isCanPlace && _currentGrid.IsAvailable)
+        if (_isCanPlace && _currentGrid.IsPlacementAllow(_isVertical))
         {
             PlaceWall();
         }
@@ -100,7 +103,7 @@ public class DragWall : MonoBehaviour
     {
         var originalWall = Instantiate(_wallPrefab, _currentWall.position, GetWallRotation());
 
-        _currentGrid.PlaceWall(originalWall);
+        _currentGrid.PlaceWall(originalWall, _isVertical);
 
         DestroyGhostWall();
     }

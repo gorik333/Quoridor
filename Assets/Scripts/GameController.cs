@@ -17,7 +17,7 @@ public class GameController : MonoBehaviour
 
     private void OnEnable()
     {
-        _grid.Move += PlayerMoved;
+        _grid.OnMove += PlayerMoved;
     }
 
 

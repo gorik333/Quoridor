@@ -12,29 +12,61 @@ public class WallGridPart : MonoBehaviour
     [SerializeField]
     private Transform _wallPlacePos;
 
+    [SerializeField]
+    private BoxCollider _wallCollider;
+
     #endregion
 
-
-    private bool _isAvailable;
+    private bool _isVerticalAllow;
+    private bool _isHorizontalAllow;
 
     public event Place OnPlace;
-    public delegate void Place(WallGridPart wallGridPart);
+    public delegate void Place(WallGridPart wallGridPart, bool isVertical);
 
 
     private void Start()
     {
-        _isAvailable = true;
+        AllowPlacement();
     }
 
 
-    public void PlaceWall(GameObject wall)
+    public void PlaceWall(GameObject wall, bool isVertical)
     {
-        if (_isAvailable)
-        {
-            wall.transform.position = _wallPlacePos.position;
+        OnPlace(this, isVertical);
 
-            _isAvailable = false;
-        }
+        wall.transform.position = _wallPlacePos.position;
+
+        DisallowPlacement(isVertical);
+    }
+
+
+    private void AllowPlacement()
+    {
+        _isHorizontalAllow = true;
+        _isVerticalAllow = true;
+
+        _wallCollider.enabled = true;
+    }
+
+
+    public void DisallowPlacement(bool isVertical)
+    {
+        if (isVertical)
+            _isVerticalAllow = false;
+        else
+            _isHorizontalAllow = false;
+
+        if (!_isVerticalAllow && !_isHorizontalAllow)
+            _wallCollider.enabled = false;
+    }
+
+
+    public bool IsPlacementAllow(bool isVertical)
+    {
+        if (isVertical)
+            return _isVerticalAllow;
+        else
+            return _isHorizontalAllow;
     }
 
 
@@ -42,5 +74,7 @@ public class WallGridPart : MonoBehaviour
 
     public Vector3 WallPlacePos { get => _wallPlacePos.position; }
 
-    public bool IsAvailable { get => _isAvailable; }
+    public bool IsVerticalAllow { get => _isVerticalAllow; }
+
+    public bool IsHorizontalAllow { get => _isHorizontalAllow; }
 }

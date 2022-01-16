@@ -5844,7 +5844,7 @@ GameObject:
   - component: {fileID: 1172585937}
   - component: {fileID: 1172585938}
   m_Layer: 0
-  m_Name: Grid
+  m_Name: GridController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11397,6 +11397,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce0fe3b40bd8c1a42ac8533d4b3d79d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _gridController: {fileID: 1172585938}
 --- !u!1 &2051262491
 GameObject:
   m_ObjectHideFlags: 0

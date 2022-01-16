@@ -1,6 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static MoveGridPart;
+
+public enum Direction
+{
+    Right,
+    Left,
+    Top,
+    Bottom,
+    None
+}
+
+public struct GridParam
+{
+    public Vector2Int GridPos;
+    public Direction GridDirection;
+
+    public GridParam(Vector2Int gridPos, Direction direction)
+    {
+        GridPos = gridPos;
+        GridDirection = direction;
+    }
+}
 
 public class GridController : MonoBehaviour
 {
@@ -19,8 +41,8 @@ public class GridController : MonoBehaviour
 
     private int _pawnCount;
 
-    public event OnMove Move;
-    public delegate void OnMove();
+    public event Move OnMove;
+    public delegate void Move();
 
 
     private void OnEnable()
@@ -54,9 +76,86 @@ public class GridController : MonoBehaviour
     }
 
 
-    private void PlaceWall(WallGridPart wallGridPart)
+    private void PlaceWall(WallGridPart wallGridPart, bool isVertical)
     {
+        BlockNearMoveGrid(wallGridPart.GridPos, isVertical);
+        BlockNearWallAvailablePlace(wallGridPart.GridPos, isVertical);
 
+        OnMove?.Invoke();
+    }
+
+
+    //public bool IsPlacementWallAllowed(Vector2Int pos)
+    //{
+
+
+    //    return false;
+    //}
+
+
+    private void BlockNearMoveGrid(Vector2Int wallPos, bool isVertical)
+    {
+        var blockedWays = new List<GridParam>();
+
+        if (isVertical)
+        {
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x, wallPos.y + 1), Direction.Right));
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x, wallPos.y), Direction.Right));
+
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x + 1, wallPos.y + 1), Direction.Left));
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x + 1, wallPos.y), Direction.Left));
+        }
+        else
+        {
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x, wallPos.y + 1), Direction.Bottom));
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x, wallPos.y), Direction.Top));
+
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x + 1, wallPos.y + 1), Direction.Bottom));
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x + 1, wallPos.y), Direction.Top));
+        }
+
+        for (int i = 0; i < _moveGridPart.Count; i++)
+        {
+            for (int j = 0; j < blockedWays.Count; j++)
+            {
+                if (_moveGridPart[i].GridPos == blockedWays[j].GridPos)
+                {
+                    _moveGridPart[i].BlockDirection(blockedWays[j].GridDirection);
+
+                    break;
+                }
+            }
+        }
+    }
+
+
+    private void BlockNearWallAvailablePlace(Vector2Int wallPos, bool isVertical)
+    {
+        var blockPlaces = new List<Vector2Int>();
+
+        if (isVertical)
+        {
+            blockPlaces.Add(new Vector2Int(wallPos.x, wallPos.y - 1));
+            blockPlaces.Add(new Vector2Int(wallPos.x, wallPos.y + 1));
+        }
+        else
+        {
+            blockPlaces.Add(new Vector2Int(wallPos.x + 1, wallPos.y));
+            blockPlaces.Add(new Vector2Int(wallPos.x - 1, wallPos.y));
+        }
+
+        for (int i = 0; i < _wallGridPart.Count; i++)
+        {
+            for (int j = 0; j < blockPlaces.Count; j++)
+            {
+                if (_wallGridPart[i].GridPos == blockPlaces[j])
+                {
+                    _wallGridPart[i].DisallowPlacement(isVertical);
+
+                    break;
+                }
+            }
+        }
     }
 
 
@@ -112,11 +211,13 @@ public class GridController : MonoBehaviour
     }
 
 
-    private void MoveToGridPart(MoveGridPart gridPart)
+    public void MoveToGridPart(MoveGridPart nextGridPart)
     {
-        _currentPawn.MoveToPart(gridPart);
+        _currentPawn.MoveToPart(nextGridPart);
 
-        Move?.Invoke();
+        nextGridPart.IsWithPawn = true;
+
+        OnMove?.Invoke();
     }
 
 
@@ -131,24 +232,44 @@ public class GridController : MonoBehaviour
     }
 
 
+    public void PlayerMove(MoveGridPart nextGridPart)
+    {
+        MoveGridPart currentMoveGrid = GetGridPart(_currentPawn);
+
+        var possibleMoves = PossibleMove.GetPossibleMoves(_moveGridPart, currentMoveGrid);
+
+        for (int i = 0; i < possibleMoves.Count; i++)
+        {
+            if (nextGridPart.GridPos == possibleMoves[i])
+            {
+                currentMoveGrid.IsWithPawn = false;
+
+                MoveToGridPart(nextGridPart);
+
+                break;
+            }
+        }
+
+    }
+
+
     private void ComputerMove(Pawn pawn)
     {
-        var nextGrid = AI.NextMove(_moveGridPart, pawn.PawnPos);
+        MoveGridPart currentMovePart = GetGridPart(pawn);
 
-        MoveToGridPart(nextGrid);
+        currentMovePart.IsWithPawn = false;
+
+        var nextGridPart = AI.NextMove(_moveGridPart, currentMovePart);
+
+        MoveToGridPart(nextGridPart);
     }
 
 
     private void UnlockPossibleMoves(Pawn pawn)
     {
-        var pos = pawn.PawnPos; // x y
+        MoveGridPart currentMoveGrid = GetGridPart(pawn);
 
-        List<Vector2Int> possibleMoves = new List<Vector2Int>();
-
-        possibleMoves.Add(new Vector2Int(pos.x + 1, pos.y)); // x + 1, y
-        possibleMoves.Add(new Vector2Int(pos.x - 1, pos.y)); // x - 1, y
-        possibleMoves.Add(new Vector2Int(pos.x, pos.y - 1)); // x, y - 1
-        possibleMoves.Add(new Vector2Int(pos.x, pos.y + 1)); // x, y + 1
+        var possibleMoves = PossibleMove.GetPossibleMoves(_moveGridPart, currentMoveGrid);
 
         for (int i = 0; i < _moveGridPart.Count; i++)
         {
@@ -160,8 +281,7 @@ public class GridController : MonoBehaviour
 
                     break;
                 }
-
-                if (_moveGridPart[i].GridPos != possibleMoves[j])
+                else
                     _moveGridPart[i].UpdateState(false);
             }
         }
@@ -175,8 +295,10 @@ public class GridController : MonoBehaviour
     }
 
 
-    private MoveGridPart GetGridPart(Vector2 pos)
+    private MoveGridPart GetGridPart(Pawn pawn)
     {
+        var pos = pawn.PawnPos;
+
         for (int i = 0; i < _moveGridPart.Count; i++)
         {
             if (_moveGridPart[i].GridPos == pos)
