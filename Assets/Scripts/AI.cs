@@ -31,10 +31,10 @@ public static class AI
 
         //Vector2Int possibleMove = new Vector2Int(currentMoveGrid.GridPos.x, currentMoveGrid.GridPos.y - 1);
 
-        var currentMoveGrid = startMoveGrid;
-
         for (int k = 0; k < MAX_MOVES_COUNT; k++)
         {
+            var currentMoveGrid = startMoveGrid;
+
             for (int i = 0; i < moveGridParts.Count; i++)
             {
                 var possibleMoves = PossibleMove.GetPossibleMoves(moveGridParts, currentMoveGrid, Direction.Bottom);
