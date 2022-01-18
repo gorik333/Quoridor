@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+//using System.Diagnostics;
 using UnityEngine;
 
 public class MoveGridPart : MonoBehaviour
@@ -30,6 +31,18 @@ public class MoveGridPart : MonoBehaviour
 
     public event Move OnMoveTo;
     public delegate void Move(MoveGridPart moveGridPart);
+
+    public MoveGridPart cameFromNode;
+
+    private int _cost = 1;
+    public int Cost
+    {
+        get => _cost;
+        set => _cost = value;
+            
+    }
+
+    public string Text;
 
 
     private void OnEnable()

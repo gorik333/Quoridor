@@ -15,7 +15,7 @@ public struct Move
 
 public static class PossibleMove
 {
-    public static List<Vector2Int> GetPossibleMoves(List<MoveGridPart> moveGridParts, MoveGridPart currentMoveGrid, Direction priority = Direction.None)
+    public static List<Vector2Int> GetPossibleMoves(List<MoveGridPart> moveGridParts, MoveGridPart currentMoveGrid, Direction[] priority = null)
     {
         var pos = currentMoveGrid.GridPos;
 
@@ -29,6 +29,8 @@ public static class PossibleMove
             if (nextGrid.IsWithPawn && nextGrid.IsDirectionAvailable(Direction.Right))
             {
                 rightPos = new Vector2Int(pos.x + 2, pos.y);
+
+                nextGrid = GetGrid(moveGridParts, rightPos);
             }
 
             if (!nextGrid.IsWithPawn)
@@ -42,6 +44,8 @@ public static class PossibleMove
             if (nextGrid.IsWithPawn && nextGrid.IsDirectionAvailable(Direction.Left))
             {
                 leftPos = new Vector2Int(pos.x - 2, pos.y);
+
+                nextGrid = GetGrid(moveGridParts, leftPos);
             }
 
             if (!nextGrid.IsWithPawn)
@@ -55,6 +59,8 @@ public static class PossibleMove
             if (nextGrid.IsWithPawn && nextGrid.IsDirectionAvailable(Direction.Top))
             {
                 topPos = new Vector2Int(pos.x, pos.y + 2);
+
+                nextGrid = GetGrid(moveGridParts, topPos);
             }
 
             if (!nextGrid.IsWithPawn)
@@ -68,29 +74,46 @@ public static class PossibleMove
             if (nextGrid.IsWithPawn && nextGrid.IsDirectionAvailable(Direction.Bottom))
             {
                 bottomPos = new Vector2Int(pos.x, pos.y - 2);
+
+                nextGrid = GetGrid(moveGridParts, bottomPos);
             }
 
             if (!nextGrid.IsWithPawn)
                 possibleMoves.Add(new Move(bottomPos, Direction.Bottom)); // x, y - 1
         }
 
-        if (possibleMoves.Count > 1 && priority != Direction.None)
+        List<Vector2Int> result = new List<Vector2Int>();
+
+        result.Add(Vector2Int.zero);
+
+        int max = (int)Direction.Left;
+
+        if (possibleMoves.Count > 1 && priority != null)
         {
             for (int i = 0; i < possibleMoves.Count; i++)
             {
-                if (possibleMoves[i].MoveDirection != priority)
+                for (int j = 0; j < priority.Length; j++)
                 {
-                    possibleMoves.Remove(possibleMoves[i]);
+                    if ((int)possibleMoves[i].MoveDirection < max)
+                    {
+
+                        result[0] = possibleMoves[i].Pos;
+
+                        max = (int)possibleMoves[i].MoveDirection;
+                    }
                 }
             }
         }
 
-        List<Vector2Int> result = new List<Vector2Int>();
-
-        for (int i = 0; i < possibleMoves.Count; i++)
+        if (priority == null)
         {
-            result.Add(possibleMoves[i].Pos);
+            for (int i = 0; i < possibleMoves.Count; i++)
+            {
+                result.Add(possibleMoves[i].Pos);
+            }
         }
+
+        //Debug.Log(
 
         return result;
     }

@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+/*
 public struct BestMoves
 {
     public Vector2Int MovePos;
@@ -75,4 +77,6 @@ public static class AI
 
         return 0;
     }
+
 }
+*/

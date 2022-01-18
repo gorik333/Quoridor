@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static MoveGridPart;
 
@@ -182,6 +183,7 @@ public class GridController : MonoBehaviour
             {
                 if (_moveGridPart[i].GridPos == _spawnPos[j])
                 {
+                    _moveGridPart[i].IsWithPawn = true;
                     SpawnPawn(_moveGridPart[i]);
 
                     break;
@@ -228,7 +230,7 @@ public class GridController : MonoBehaviour
         if (_currentPawn.IsPlayer)
             UnlockPossibleMoves(_currentPawn);
         else
-            ComputerMove(_currentPawn);
+            StartCoroutine( ComputerMove(_currentPawn));
     }
 
 
@@ -253,13 +255,21 @@ public class GridController : MonoBehaviour
     }
 
 
-    private void ComputerMove(Pawn pawn)
+    private IEnumerator ComputerMove(Pawn pawn)
     {
+        yield return new WaitForSeconds(0);
         MoveGridPart currentMovePart = GetGridPart(pawn);
 
         currentMovePart.IsWithPawn = false;
 
-        var nextGridPart = AI.NextMove(_moveGridPart, currentMovePart);
+        //var nextGridPart = AI.NextMove(_moveGridPart, currentMovePart);
+
+        Assets.Scripts.AI.AI ai = new Assets.Scripts.AI.AI();
+
+        MoveGridPart opponentPos = _moveGridPart.Where(x => x.IsWithPawn && x != currentMovePart).FirstOrDefault();
+        //Debug.Log("Opponent position " + _moveGridPart.Where(x => x.IsWithPawn && x != currentMovePart).ToList().Count + opponentPos.GridPos.x + opponentPos.GridPos.y);
+
+        var nextGridPart = ai.NextMove(currentMovePart, _moveGridPart);                      //g.Dijkstra3(currentMovePart, _moveGridPart.Where(x => x.GridPos.y == 1 && x.GridPos.x == 5).FirstOrDefault(), _moveGridPart);
 
         MoveToGridPart(nextGridPart);
     }
