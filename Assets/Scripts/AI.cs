@@ -22,6 +22,7 @@ public static class AI
     //private static Direction _mainDirection = Direction.Bottom;
 
     private const int MAX_MOVES_COUNT = 100;
+    private const int MAX_ATTEMPTS = 2;
 
     public static MoveGridPart NextMove(List<MoveGridPart> moveGridParts, MoveGridPart startMoveGrid)
     {
@@ -31,51 +32,98 @@ public static class AI
 
         var movesNeeded = 0;
 
-        //Vector2Int possibleMove = new Vector2Int(currentMoveGrid.GridPos.x, currentMoveGrid.GridPos.y - 1);
-
-        var currentMoveGrid = startMoveGrid;
-
-        for (int k = 0; k < MAX_MOVES_COUNT; k++)
+        for (int c = 0; c < MAX_ATTEMPTS; c++)
         {
-            for (int i = 0; i < moveGridParts.Count; i++)
+            var firstMove = Vector2Int.zero;
+            var currentMoveGrid = startMoveGrid;
+
+            for (int k = 0; k < MAX_MOVES_COUNT; k++)
             {
-                var possibleMoves = PossibleMove.GetPossibleMoves(moveGridParts, currentMoveGrid, Direction.Bottom);
-
-                for (int j = 0; j < possibleMoves.Count; j++)
+                for (int i = 0; i < moveGridParts.Count; i++)
                 {
-                    if (moveGridParts[i].GridPos == possibleMoves[j] && !moveGridParts[i].IsWithPawn)
+                    var possibleMoves = PossibleMove.GetPossibleMoves(moveGridParts, currentMoveGrid, Direction.Bottom);
+
+                    if (firstMove == Vector2.zero)
                     {
-                        currentMoveGrid = moveGridParts[i];
+                        var rand = Random.Range(0, possibleMoves.Count);
 
-                        Debug.Log(currentMoveGrid.GridPos);
+                        firstMove = possibleMoves[rand];
+                    }
 
-                        movesNeeded++;
+                    for (int j = 0; j < possibleMoves.Count; j++)
+                    {
+                        if (moveGridParts[i].GridPos == possibleMoves[j] && !moveGridParts[i].IsWithPawn)
+                        {
+                            currentMoveGrid = moveGridParts[i];
 
+                            //Debug.Log(currentMoveGrid.GridPos);
+
+                            movesNeeded++;
+
+                            break;
+                        }
+                    }
+
+                    if (currentMoveGrid.GridPos.y == 1)
+                    {
                         break;
                     }
+
                 }
 
                 if (currentMoveGrid.GridPos.y == 1)
                 {
-                    Debug.Log(movesNeeded);
+                    //Debug.Log(movesNeeded);
 
-                    move = moveGridParts[i];
+                    bestMoves.Add(new BestMoves(firstMove, movesNeeded));
+
+                    movesNeeded = 0;
 
                     break;
                 }
             }
         }
 
+
+        var bestMove = Vector2Int.zero;
+
+        var minMoves = int.MaxValue;
+
+        for (int i = 0; i < bestMoves.Count; i++)
+        {
+            if (bestMoves[i].MoveCountToWin < minMoves)
+            {
+                minMoves = bestMoves[i].MoveCountToWin;
+            }
+        }
+
+
+        for (int i = 0; i < bestMoves.Count; i++)
+        {
+            if (bestMoves[i].MoveCountToWin == minMoves)
+            {
+                bestMove = bestMoves[i].MovePos;
+
+
+                break;
+            }
+        }
+
+        for (int i = 0; i < moveGridParts.Count; i++)
+        {
+            //Debug.Log(bestMove);
+
+            if (bestMove == moveGridParts[i].GridPos)
+            {
+                move = moveGridParts[i];
+
+
+                break;
+            }
+        }
+
+
         return move;
-    }
-
-
-    private static int MovesNeeded()
-    {
-
-
-
-        return 0;
     }
 
 }
