@@ -25,6 +25,62 @@ namespace Assets.Scripts.AI
         */
 
 
+
+        #region
+
+        /*
+
+        public int minimax(MoveGridPart position, int depth, bool maximizingPlayer)
+        {
+
+            //if (depth == 0 || game.isOver)
+            //    return static evaluation of position;
+
+            if (maximizingPlayer)
+            {
+                int maxEval = Int16.MinValue;
+                foreach (child of position)                      //child of position - position that can be achieved by a single move. Moves + walls
+                {
+                    int eval = minimax(child, depth - 1, false);                //perhabs position is a field?
+                    maxEval = Math.Max(maxEval, eval);
+                }
+                return maxEval;
+            }
+            else
+            {
+                int minEval = Int16.MaxValue;
+                foreach (child of position)
+                {
+                    int eval = minimax(child, depth - 1, true);
+                    minEval = Math.Min(minEval, eval);
+                }
+                    
+                return minEval;
+            }
+
+
+        }
+
+        static int Evaluation(MoveGridPart position)
+        {
+            int stepsToFinish = 0;
+            //stepsToFinish = position.howManyGridPartsToFinish;
+            //but reverse. less moves to finish = better.
+
+            return stepsToFinish;
+        }
+
+
+        */
+
+        #endregion
+
+
+
+
+
+
+
         public MoveGridPart NextMove(MoveGridPart startPos , List<MoveGridPart> field, bool isPlayerPawn = false)
         {
             Pathfinding dijkstra = new Pathfinding();
@@ -32,26 +88,25 @@ namespace Assets.Scripts.AI
 
             MoveGridPart opponentPos = field.Find(grid => grid.IsWithPawn && grid != startPos);
             MoveGridPart testGrid = field.Find(grid => grid.GridPos.x == opponentPos.GridPos.x && grid.GridPos.y == opponentPos.GridPos.y);
-            //Queue<MoveGridPart> playerPath = RunMove(testGrid, field, dijkstra, true);
+            Queue<MoveGridPart> playerPath = RunMove(opponentPos, field, dijkstra, true);
             Queue<MoveGridPart> computerPath = RunMove(startPos, field, dijkstra, false);
             
 
 
 
-            //Debug.Log("Player shortest path " + computerPath.Count);
-            //Debug.Log("Start position " + opponentPos.GridPos.x + ", " + opponentPos.GridPos.y);
-            //return computerPath.Dequeue(); //field.Find(x => x.GridPos.x == startPos.GridPos.x && x.GridPos.y == startPos.GridPos.y - 1);
+            //Debug.Log("Player shortest path " + playerPath.Count);
+
 
             
-            //if (playerPath.Count >= computerPath.Count)
+            if (playerPath.Count >= computerPath.Count)
             
                 return computerPath.Dequeue();
-            //else
-            //{
-             //   Debug.Log("Need to place a Wall. Opponent is winning");
-             //   return computerPath.Dequeue();
+            else
+            {
+                Debug.Log("Need to place a Wall. Opponent is winning. His shortest path is " +playerPath.Count );
+                return computerPath.Dequeue();
 
-            //}
+            }
             
 
 
@@ -62,7 +117,11 @@ namespace Assets.Scripts.AI
             int finalY = 1;
 
             if (isPlayerPawn)
+            {
                 finalY = 9;
+                startPos.IsWithPawn = false;
+            }
+
 
 
             List<MoveGridPart> finalPositions = new List<MoveGridPart>();
@@ -88,9 +147,47 @@ namespace Assets.Scripts.AI
 
             }
 
-
+            if(isPlayerPawn)
+                startPos.IsWithPawn = true;
             return path;
         }
 
     }
 }
+
+
+
+#region minimax
+/*
+public float minimax(MoveGridPart position, int depth, int alpha, int beta, bool maximizongPlayer)
+{
+
+    if (depth == 0 || game.isOver)
+        return static evaluation of position;
+
+    if (maximizingPlayer)
+    {
+        int maxEval = Int16.MinValue;
+        foreach (child of position)          //child of position - position that can be achieved by a single move 
+            eval = minimax(child, depth - 1, alpha, beta, false)
+            maxEval = max(maxEval, eval)
+            alpha = max(apha, eval)
+            if (beta <= alpha)
+            break;
+        return maxEval;
+    }
+    else
+    {
+        minEval = Int16.MaxValue;
+        foreach (child of posityin)
+            eval = minimax(child, depth - 1, alpha, beta, true);
+        minEval = min(minEval, eval)
+            beta = min(beta, eval)
+            if (beta <= alpha)
+            break;
+        return minEval;
+    }
+
+
+}*/
+#endregion
