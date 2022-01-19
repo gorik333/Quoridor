@@ -109,7 +109,7 @@ namespace Assets.Scripts.AI
             int finalY = y;
 
             //if (isPlayerPawn)
-                startPos.IsWithPawn = false;
+            startPos.IsWithPawn = false;
 
             List<MoveGridPart> finalPositions = new List<MoveGridPart>();
 
@@ -139,7 +139,7 @@ namespace Assets.Scripts.AI
             }
 
             //if (isPlayerPawn)
-                startPos.IsWithPawn = true;
+            startPos.IsWithPawn = true;
 
             return path;
         }
