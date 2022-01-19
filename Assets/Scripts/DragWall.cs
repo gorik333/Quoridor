@@ -101,9 +101,7 @@ public class DragWall : MonoBehaviour
 
     private void PlaceWall()
     {
-        var originalWall = Instantiate(_wallPrefab, _currentWall.position, GetWallRotation());
-
-        _currentGrid.PlaceWall(originalWall, _isVertical);
+        _currentGrid.PlaceWall(_isVertical);
 
         DestroyGhostWall();
     }

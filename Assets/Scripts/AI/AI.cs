@@ -25,7 +25,7 @@ namespace Assets.Scripts.AI
         */
 
 
-        public MoveGridPart NextMove(MoveGridPart startPos , List<MoveGridPart> field, bool isPlayerPawn = false)
+        public MoveGridPart NextMove(MoveGridPart startPos, List<MoveGridPart> field, bool isPlayerPawn = false)
         {
             Pathfinding dijkstra = new Pathfinding();
             //Debug.Log("Test grid pos: " + opponentPos.GridPos.x + ", " + opponentPos.GridPos.y);
@@ -34,7 +34,7 @@ namespace Assets.Scripts.AI
             MoveGridPart testGrid = field.Find(grid => grid.GridPos.x == opponentPos.GridPos.x && grid.GridPos.y == opponentPos.GridPos.y);
             //Queue<MoveGridPart> playerPath = RunMove(testGrid, field, dijkstra, true);
             Queue<MoveGridPart> computerPath = RunMove(startPos, field, dijkstra, false);
-            
+
 
 
 
@@ -42,17 +42,17 @@ namespace Assets.Scripts.AI
             //Debug.Log("Start position " + opponentPos.GridPos.x + ", " + opponentPos.GridPos.y);
             //return computerPath.Dequeue(); //field.Find(x => x.GridPos.x == startPos.GridPos.x && x.GridPos.y == startPos.GridPos.y - 1);
 
-            
+
             //if (playerPath.Count >= computerPath.Count)
-            
-                return computerPath.Dequeue();
+
+            return computerPath.Dequeue();
             //else
             //{
-             //   Debug.Log("Need to place a Wall. Opponent is winning");
-             //   return computerPath.Dequeue();
+            //   Debug.Log("Need to place a Wall. Opponent is winning");
+            //   return computerPath.Dequeue();
 
             //}
-            
+
 
 
         }
@@ -62,8 +62,11 @@ namespace Assets.Scripts.AI
             int finalY = 1;
 
             if (isPlayerPawn)
-                finalY = 9;
+            {
+                startPos.IsWithPawn = false;
 
+                finalY = 9;
+            }
 
             List<MoveGridPart> finalPositions = new List<MoveGridPart>();
 
@@ -80,6 +83,10 @@ namespace Assets.Scripts.AI
             {
                 Queue<MoveGridPart> pathToCheck = dijkstra.Dijkstra3(finalPosition, startPos, field);
 
+                //if (pathToCheck == null)
+                //    continue;
+                //return null;
+
                 if (pathToCheck.Count < minPathCount)
                 {
                     minPathCount = pathToCheck.Count;
@@ -88,9 +95,84 @@ namespace Assets.Scripts.AI
 
             }
 
+            if (isPlayerPawn)
+            {
+                startPos.IsWithPawn = true;
+            }
 
             return path;
         }
 
+
+        public Queue<MoveGridPart> RunMove(MoveGridPart startPos, List<MoveGridPart> field, Pathfinding dijkstra, bool isPlayerPawn, int y)
+        {
+            int finalY = y;
+
+            //if (isPlayerPawn)
+                startPos.IsWithPawn = false;
+
+            List<MoveGridPart> finalPositions = new List<MoveGridPart>();
+
+            for (int x = 1; x <= 9; x++)
+            {
+                finalPositions.Add(field.Find(gridPart => gridPart.GridPos.y == finalY && gridPart.GridPos.x == x));
+            }
+
+            int minPathCount = Int32.MaxValue;
+            Queue<MoveGridPart> path = new Queue<MoveGridPart>();
+
+
+            foreach (MoveGridPart finalPosition in finalPositions)
+            {
+                Queue<MoveGridPart> pathToCheck = dijkstra.Dijkstra3(finalPosition, startPos, field);
+
+                if (pathToCheck == null)
+                    continue;
+                //return null;
+
+                if (pathToCheck.Count < minPathCount)
+                {
+                    minPathCount = pathToCheck.Count;
+                    path = pathToCheck;
+                }
+
+            }
+
+            //if (isPlayerPawn)
+                startPos.IsWithPawn = true;
+
+            return path;
+        }
+
+
+        //private int PathCount(MoveGridPart startPos, List<MoveGridPart> field, Pathfinding dijkstra, bool isPlayerPawn)
+        //{
+        //    int finalY = 1;
+
+        //    if (isPlayerPawn)
+        //        finalY = 9;
+
+        //    List<MoveGridPart> finalPositions = new List<MoveGridPart>();
+
+        //    for (int x = 1; x <= 9; x++)
+        //    {
+        //        finalPositions.Add(field.Find(gridPart => gridPart.GridPos.y == finalY && gridPart.GridPos.x == x));
+        //    }
+
+
+        //    int minPathCount = Int32.MaxValue;
+        //    Queue<MoveGridPart> path = new Queue<MoveGridPart>();
+
+        //    foreach (MoveGridPart finalPosition in finalPositions)
+        //    {
+        //        Queue<MoveGridPart> pathToCheck = dijkstra.Dijkstra3(finalPosition, startPos, field);
+
+        //        if (pathToCheck.Count < minPathCount)
+        //        {
+        //            minPathCount = pathToCheck.Count;
+        //            path = pathToCheck;
+        //        }
+        //    }
+        //}
     }
 }

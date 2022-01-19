@@ -14,9 +14,6 @@ public class MoveGridPart : MonoBehaviour
     private SpriteRenderer _spriteRenderer;
 
     [SerializeField]
-    private Sprite _allowSprite;
-
-    [SerializeField]
     private Transform _pawnMovePos;
 
     #endregion
@@ -39,13 +36,19 @@ public class MoveGridPart : MonoBehaviour
     {
         get => _cost;
         set => _cost = value;
-            
+
     }
 
     public string Text;
 
 
     private void OnEnable()
+    {
+        OnStart();
+    }
+
+
+    public void OnStart()
     {
         _availableDirection = new List<Direction>();
 
@@ -95,6 +98,13 @@ public class MoveGridPart : MonoBehaviour
     {
         if (_availableDirection.Contains(direction))
             _availableDirection.Remove(direction);
+    }
+
+
+    public void UnblockDirection(Direction direction)
+    {
+        if (!_availableDirection.Contains(direction))
+            _availableDirection.Add(direction);
     }
 
 

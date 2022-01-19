@@ -10,6 +10,11 @@ public class Pawn : MonoBehaviour
     [SerializeField]
     private Vector2Int _currentPos;
 
+
+    private int _verticalWallPlaced;
+    private int _horizontalWallPlaced;
+
+    private int _startY;
     private bool _isPlayer;
 
 
@@ -40,4 +45,8 @@ public class Pawn : MonoBehaviour
     public Vector2Int PawnPos { get => _currentPos; }
 
     public bool IsPlayer { get => _isPlayer; }
+
+    public int StartY { get => _startY; set => _startY = value; }
+    public int HorizontalWallPlaced { get => _horizontalWallPlaced; set => _horizontalWallPlaced = value; }
+    public int VerticalWallPlaced { get => _verticalWallPlaced; set => _verticalWallPlaced = value; }
 }

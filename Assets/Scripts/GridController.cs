@@ -38,9 +38,20 @@ public class GridController : MonoBehaviour
     private List<MoveGridPart> _moveGridPart;
     private List<WallGridPart> _wallGridPart;
 
+    private WallGridPart _lastWall;
+
     private Pawn _currentPawn;
 
     private int _pawnCount;
+    private int _previousCount;
+
+    private bool _previousIsPlayer;
+
+    public List<Pawn> CurrentPawn { get => _pawn; set => _pawn = value; }
+
+    public List<MoveGridPart> MoveGridPart { get => _moveGridPart; set => _moveGridPart = value; }
+
+    public List<WallGridPart> WallGridPart { get => _wallGridPart; set => _wallGridPart = value; }
 
     public event Move OnMove;
     public delegate void Move();
@@ -62,6 +73,7 @@ public class GridController : MonoBehaviour
         for (int i = 0; i < _wallGridPart.Count; i++)
         {
             _wallGridPart[i].OnPlace += PlaceWall;
+            _wallGridPart[i].OnDelete += UnblockNearMoveGrid;
         }
     }
 
@@ -77,12 +89,16 @@ public class GridController : MonoBehaviour
     }
 
 
-    private void PlaceWall(WallGridPart wallGridPart, bool isVertical)
+
+    private void PlaceWall(WallGridPart wallGridPart, bool isVertical, bool isMove = true)
     {
+        var pos = wallGridPart.GridPos;
+
         BlockNearMoveGrid(wallGridPart.GridPos, isVertical);
         BlockNearWallAvailablePlace(wallGridPart.GridPos, isVertical);
 
-        OnMove?.Invoke();
+        if (isMove)
+            OnMove?.Invoke();
     }
 
 
@@ -122,6 +138,44 @@ public class GridController : MonoBehaviour
                 if (_moveGridPart[i].GridPos == blockedWays[j].GridPos)
                 {
                     _moveGridPart[i].BlockDirection(blockedWays[j].GridDirection);
+
+                    break;
+                }
+            }
+        }
+    }
+
+
+    private void UnblockNearMoveGrid(WallGridPart wall, bool isVertical)
+    {
+        var wallPos = wall.GridPos;
+
+        var blockedWays = new List<GridParam>();
+
+        if (isVertical)
+        {
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x, wallPos.y + 1), Direction.Right));
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x, wallPos.y), Direction.Right));
+
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x + 1, wallPos.y + 1), Direction.Left));
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x + 1, wallPos.y), Direction.Left));
+        }
+        else
+        {
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x, wallPos.y + 1), Direction.Bottom));
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x, wallPos.y), Direction.Top));
+
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x + 1, wallPos.y + 1), Direction.Bottom));
+            blockedWays.Add(new GridParam(new Vector2Int(wallPos.x + 1, wallPos.y), Direction.Top));
+        }
+
+        for (int i = 0; i < _moveGridPart.Count; i++)
+        {
+            for (int j = 0; j < blockedWays.Count; j++)
+            {
+                if (_moveGridPart[i].GridPos == blockedWays[j].GridPos)
+                {
+                    _moveGridPart[i].UnblockDirection(blockedWays[j].GridDirection);
 
                     break;
                 }
@@ -175,7 +229,7 @@ public class GridController : MonoBehaviour
     }
 
 
-    public void SpawnPawns(int count)
+    public void SpawnPawns(int count, bool isWithComputer = false)
     {
         for (int i = 0; i < _moveGridPart.Count; i++)
         {
@@ -184,7 +238,8 @@ public class GridController : MonoBehaviour
                 if (_moveGridPart[i].GridPos == _spawnPos[j])
                 {
                     _moveGridPart[i].IsWithPawn = true;
-                    SpawnPawn(_moveGridPart[i]);
+
+                    SpawnPawn(_moveGridPart[i], _spawnPos[j].y, isWithComputer);
 
                     break;
                 }
@@ -193,23 +248,31 @@ public class GridController : MonoBehaviour
     }
 
 
-    private void SpawnPawn(MoveGridPart gridPart)
+    private void SpawnPawn(MoveGridPart gridPart, int y, bool isWithComputer = false)
     {
         var rotation = _pawnPrefab.transform.rotation;
 
         var pawn = Instantiate(_pawnPrefab, transform.position, rotation).GetComponent<Pawn>();
 
-        var isPlayer = true;
+        var isPlayer = Random.value > 0.5f;
 
-        if (_pawnCount == 1)
-            isPlayer = false;
+        if (isWithComputer)
+        {
+            if (_pawnCount == 1)
+                isPlayer = !_previousIsPlayer;
+        }
+        else
+        {
+            isPlayer = true;
+        }
 
+        pawn.StartY = y;
         pawn.SetUp(_pawnMaterial[_pawnCount % _pawnMaterial.Length], gridPart, isPlayer);
         pawn.name = $"{pawn.GetType().Name}_{_pawnCount}";
 
         _pawn.Add(pawn);
-
         _pawnCount++;
+        _previousIsPlayer = isPlayer;
     }
 
 
@@ -230,13 +293,13 @@ public class GridController : MonoBehaviour
         if (_currentPawn.IsPlayer)
             UnlockPossibleMoves(_currentPawn);
         else
-            StartCoroutine( ComputerMove(_currentPawn));
+            StartCoroutine(ComputerMove(_currentPawn));
     }
 
 
     public void PlayerMove(MoveGridPart nextGridPart)
     {
-        MoveGridPart currentMoveGrid = GetGridPart(_currentPawn);
+        MoveGridPart currentMoveGrid = GetGridPart(_currentPawn.PawnPos);
 
         var possibleMoves = PossibleMove.GetPossibleMoves(_moveGridPart, currentMoveGrid);
 
@@ -251,33 +314,125 @@ public class GridController : MonoBehaviour
                 break;
             }
         }
-
     }
 
 
     private IEnumerator ComputerMove(Pawn pawn)
     {
         yield return new WaitForSeconds(0);
-        MoveGridPart currentMovePart = GetGridPart(pawn);
 
-        currentMovePart.IsWithPawn = false;
+        MoveGridPart currentMovePart = GetGridPart(pawn.PawnPos);
 
-        //var nextGridPart = AI.NextMove(_moveGridPart, currentMovePart);
+        var isMove = Random.value > 0.99f;
 
-        Assets.Scripts.AI.AI ai = new Assets.Scripts.AI.AI();
+        var isVertical = Random.value > 0.5f;
 
-        MoveGridPart opponentPos = _moveGridPart.Where(x => x.IsWithPawn && x != currentMovePart).FirstOrDefault();
-        //Debug.Log("Opponent position " + _moveGridPart.Where(x => x.IsWithPawn && x != currentMovePart).ToList().Count + opponentPos.GridPos.x + opponentPos.GridPos.y);
+        if (pawn.VerticalWallPlaced >= 10 && isVertical)
+        {
+            isMove = true;
+        }
+        else if (pawn.VerticalWallPlaced < 10 && isVertical)
+            pawn.VerticalWallPlaced++;
 
-        var nextGridPart = ai.NextMove(currentMovePart, _moveGridPart);                      //g.Dijkstra3(currentMovePart, _moveGridPart.Where(x => x.GridPos.y == 1 && x.GridPos.x == 5).FirstOrDefault(), _moveGridPart);
 
-        MoveToGridPart(nextGridPart);
+        if (pawn.HorizontalWallPlaced >= 10 && !isVertical)
+        {
+            isMove = true;
+        }
+        else if (pawn.HorizontalWallPlaced < 10 && !isVertical)
+            pawn.HorizontalWallPlaced++;
+
+
+        if (!isMove)
+        {
+            var wall = GetRandomWallGridPart(isVertical);
+            var ai = new Assets.Scripts.AI.AI();
+            var pathFinding = new Assets.Scripts.AI.Pathfinding();
+
+            if (wall != null)
+            {
+                var copy = GridControllerCopy();
+
+                copy.PlaceWall(wall, isVertical, false);
+
+                _lastWall = wall;
+
+                MoveGridPart playerGrid = copy.MoveGridPart.FindAll(e => e.IsWithPawn && e.GridPos != currentMovePart.GridPos).FirstOrDefault();
+
+                var playerPawn = copy.CurrentPawn.FindAll(e => e.PawnPos == playerGrid.GridPos).FirstOrDefault();
+                var computerPawn = copy.CurrentPawn.FindAll(e => e.PawnPos == currentMovePart.GridPos).FirstOrDefault();
+
+                var nextMoveEnemy = ai.RunMove(currentMovePart, copy.MoveGridPart, pathFinding, false, playerPawn.StartY);
+                var nextMovePlayer = ai.RunMove(playerGrid, copy.MoveGridPart, pathFinding, true, computerPawn.StartY);
+
+                _previousCount = nextMoveEnemy.Count + nextMovePlayer.Count;
+
+                if (nextMoveEnemy != null && nextMovePlayer != null)
+                {
+                    if (nextMoveEnemy.Count != 0 && nextMovePlayer.Count != 0)
+                    {
+                        wall.PlaceWall(isVertical);
+                    }
+                    else
+                    {
+                        isMove = true;
+                    }
+                }
+            }
+            else
+                isMove = true;
+        }
+
+        if (isMove)
+        {
+            currentMovePart.IsWithPawn = false;
+
+            var moves = PossibleMove.GetPossibleMoves(_moveGridPart, currentMovePart);
+
+            for (int i = 0; i < moves.Count; i++)
+            {
+                if (moves[i] == Vector2Int.zero)
+                    moves.Remove(moves[i]);
+            }
+
+            var randMove = Random.Range(0, moves.Count);
+            var nextMoveGrid = GetGridPart(moves[randMove]);
+
+            MoveToGridPart(nextMoveGrid);
+        }
+
+    }
+
+
+    private GridController GridControllerCopy()
+    {
+        GridController copy = (GridController)this.MemberwiseClone();
+
+        //List<MoveGridPart> copyGrd = new List<MoveGridPart>(_moveGridPart);
+
+        //var copyMoveGrid = _moveGridPart.Select(e => e).ToList();
+        //var copyMoveGrid = _moveGridPart.ConvertAll(e => new MoveGridPart());
+
+        copy.MoveGridPart = new List<MoveGridPart>(_moveGridPart);
+
+        //copy.MoveGridPart = _moveGridPart;
+
+        //var copyWallGrid = _wallGridPart.Select(e => e).ToList();
+        //var copyWallGrid = _wallGridPart.ConvertAll(e => new WallGridPart());
+
+        copy.WallGridPart = new List<WallGridPart>(_wallGridPart);
+
+        //var copyCurrentPawn = _pawn.ConvertAll(e => new Pawn());
+
+        copy.CurrentPawn = _pawn;
+
+        return copy;
     }
 
 
     private void UnlockPossibleMoves(Pawn pawn)
     {
-        MoveGridPart currentMoveGrid = GetGridPart(pawn);
+        MoveGridPart currentMoveGrid = GetGridPart(pawn.PawnPos);
 
         var possibleMoves = PossibleMove.GetPossibleMoves(_moveGridPart, currentMoveGrid);
 
@@ -305,10 +460,8 @@ public class GridController : MonoBehaviour
     }
 
 
-    private MoveGridPart GetGridPart(Pawn pawn)
+    private MoveGridPart GetGridPart(Vector2Int pos)
     {
-        var pos = pawn.PawnPos;
-
         for (int i = 0; i < _moveGridPart.Count; i++)
         {
             if (_moveGridPart[i].GridPos == pos)
@@ -318,5 +471,36 @@ public class GridController : MonoBehaviour
         }
 
         return null;
+    }
+
+
+    private WallGridPart GetRandomWallGridPart(bool isVertical)
+    {
+        var wallGridParts = new List<WallGridPart>();
+
+        for (int i = 0; i < _wallGridPart.Count; i++)
+        {
+            if (_wallGridPart[i].IsHorizontalAllow && !isVertical)
+            {
+                if (!wallGridParts.Contains(_wallGridPart[i]))
+                    wallGridParts.Add(_wallGridPart[i]);
+            }
+            else if (_wallGridPart[i].IsVerticalAllow && isVertical)
+            {
+                if (!wallGridParts.Contains(_wallGridPart[i]))
+                    wallGridParts.Add(_wallGridPart[i]);
+            }
+        }
+
+        if (wallGridParts.Count > 0)
+        {
+            var rand = Random.Range(0, wallGridParts.Count);
+
+            var result = wallGridParts[rand];
+
+            return result;
+        }
+        else
+            return null;
     }
 }

@@ -143,6 +143,7 @@ MonoBehaviour:
   _gridPos: {x: 1, y: 1}
   _wallPlacePos: {fileID: 1249088466728962464}
   _wallCollider: {fileID: 1249088466268440402}
+  _wallPrefab: {fileID: 4108401030471917266, guid: b0b9d149a4dbba147a7354cbefc483b1, type: 3}
 --- !u!1 &1249088466728962465
 GameObject:
   m_ObjectHideFlags: 0

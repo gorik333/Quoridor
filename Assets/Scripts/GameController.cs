@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    private const float TIME_TO_MOVE = 30f;
+    private const int PLAYER_COUNT = 2;
 
     [SerializeField]
     private GridController _grid;
@@ -21,23 +21,19 @@ public class GameController : MonoBehaviour
     }
 
 
-    private void Start()
+    public void OnStart(bool isWithComputer)
     {
-        SetPlayersCount(2);
+        SetPlayersCount(isWithComputer);
 
-        /*_prevMove = StartCoroutine(*/
-        MoveOrder()/*)*/;
+        MoveOrder();
     }
 
 
-    public void SetPlayersCount(int count)
+    private void SetPlayersCount(bool isWithComputer)
     {
-        if (count < 0)
-            _playerCount = 0;
+        _grid.SpawnPawns(PLAYER_COUNT, isWithComputer);
 
-        _grid.SpawnPawns(count);
-
-        _playerCount = count;
+        _playerCount = PLAYER_COUNT;
     }
 
 
@@ -45,6 +41,8 @@ public class GameController : MonoBehaviour
     {
         if (_prevMove != null)
             StopCoroutine(_prevMove);
+
+        //Debug.Log("Moved");
 
         /*_prevMove = StartCoroutine(*/
         MoveOrder()/*)*/;
