@@ -25,6 +25,125 @@ namespace Assets.Scripts.AI
         */
 
 
+
+
+        public List<List<MoveGridPart>> GetFieldStatesForRunMoves(MoveGridPart curPosition, List<MoveGridPart> curField)
+        {
+            List<MoveGridPart> neighbours = new List<MoveGridPart>();
+            var move = PossibleMove.GetPossibleMoves(curField, curPosition);
+
+            foreach (Vector2Int v in move)
+            {
+                MoveGridPart g = curField.Find(x => x.GridPos.x == v.x && x.GridPos.y == v.y);
+                if (g != null)
+                    neighbours.Add(g);
+            }
+
+            List<List<MoveGridPart>> list = new List<List<MoveGridPart>>();
+
+
+            foreach (MoveGridPart possibleMove in neighbours)
+            {
+                List<MoveGridPart> copy = new List<MoveGridPart>(curField);
+
+                copy.Find(x => x == curPosition).IsWithPawn = false;
+                copy.Find(x => x == possibleMove).IsWithPawn = true;
+                list.Add(copy);
+            }
+
+
+            return list;
+
+        }
+
+
+        #region
+
+
+        MoveGridPart selectedMove = new MoveGridPart();
+        List<MoveGridPart> selectedFieldState = new List<MoveGridPart>();
+
+        public int minimax(MoveGridPart curPos, List<MoveGridPart> position, int depth, bool maximizingPlayer)
+        {
+
+            if (depth == 0) //|| game.isOver)
+            {
+                //selectedFieldState = fieldStates;
+                return Evaluation(position, curPos, false);    //return 
+            }
+
+            if (maximizingPlayer)
+            {
+                int maxEval = Int16.MinValue;
+                foreach (List<MoveGridPart> child in GetFieldStatesForRunMoves(curPos, position))                  //perhabs position is a field    //child of position - position that can be achieved by a single move. Moves + walls
+                {
+                    MoveGridPart childPawnPos = child.FindLast(p => p.IsWithPawn == true);
+                    int eval = minimax(childPawnPos, child, depth - 1, false);
+                    if (eval > maxEval)
+                        selectedFieldState = child;      //do we need it?
+
+                    maxEval = Math.Max(maxEval, eval);
+                }
+                return maxEval;
+            }
+            else
+            {
+                int minEval = Int16.MaxValue;
+                foreach (List<MoveGridPart> child in GetFieldStatesForRunMoves(curPos, position))
+                {
+                    MoveGridPart childPawnPos = child.Find(p => p.IsWithPawn == true);
+                    int eval = minimax(childPawnPos, child, depth - 1, true);
+                    if (eval < minEval)
+                        selectedFieldState = child;
+
+                    minEval = Math.Min(minEval, eval);
+                }
+
+                return minEval;
+            }
+
+
+        }
+
+
+
+        int Evaluation(List<MoveGridPart> field, MoveGridPart curPosition, bool isPlayerPawn)
+        {
+
+            Pathfinding dijkstra = new Pathfinding();
+            Queue<MoveGridPart> path = RunMove(curPosition, field, dijkstra, isPlayerPawn);
+            //stepsToFinish = position.howManyGridPartsToFinish;
+            //but reverse. less moves to finish = better.
+
+            int stepsToFinish = 81 - path.Count;
+
+            Debug.Log("Steps to finish: " + stepsToFinish);
+            return stepsToFinish;
+        }
+
+
+
+
+        #endregion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         public MoveGridPart NextMove(MoveGridPart startPos, List<MoveGridPart> field, bool isPlayerPawn = false)
         {
             Pathfinding dijkstra = new Pathfinding();
