@@ -10,11 +10,13 @@ public class Pawn : MonoBehaviour
     [SerializeField]
     private Vector2Int _currentPos;
 
-
     private int _verticalWallPlaced;
     private int _horizontalWallPlaced;
 
+    private string _pawnColor;
+
     private int _startY;
+    private int _endY;
     private bool _isPlayer;
 
 
@@ -38,15 +40,23 @@ public class Pawn : MonoBehaviour
 
         _pawnModel.GetComponent<MeshRenderer>().material = material;
 
+        _pawnColor = material.name;
+
         MoveToPart(gridPart);
     }
 
 
     public Vector2Int PawnPos { get => _currentPos; }
 
+    public string PawnColor { get => _pawnColor; }
+
     public bool IsPlayer { get => _isPlayer; }
 
     public int StartY { get => _startY; set => _startY = value; }
+
+    public int EndY { get => _endY; set => _endY = value; }
+
     public int HorizontalWallPlaced { get => _horizontalWallPlaced; set => _horizontalWallPlaced = value; }
+
     public int VerticalWallPlaced { get => _verticalWallPlaced; set => _verticalWallPlaced = value; }
 }

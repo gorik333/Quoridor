@@ -42,27 +42,17 @@ public class GameController : MonoBehaviour
         if (_prevMove != null)
             StopCoroutine(_prevMove);
 
-        //Debug.Log("Moved");
-
-        /*_prevMove = StartCoroutine(*/
-        MoveOrder()/*)*/;
+        MoveOrder();
     }
 
 
     private void MoveOrder()
     {
-        //while (true)
-
         if (_currentPlayer >= _playerCount)
         {
             _currentPlayer = 0;
         }
 
         _grid.PawnMoveQueue(_currentPlayer++);
-
-        //yield return new WaitForSeconds(TIME_TO_MOVE);
-
-        // mb next player to move, or without time limit
-        //}
     }
 }

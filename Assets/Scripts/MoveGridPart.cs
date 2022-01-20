@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-//using System.Diagnostics;
 using UnityEngine;
 
 public class MoveGridPart : MonoBehaviour
@@ -26,10 +25,7 @@ public class MoveGridPart : MonoBehaviour
 
     private List<Direction> _availableDirection;
 
-    public event Move OnMoveTo;
-    public delegate void Move(MoveGridPart moveGridPart);
-
-    public MoveGridPart cameFromNode;
+    public MoveGridPart cameFromNode; // -
 
     private int _cost = 1;
     public int Cost
@@ -39,7 +35,7 @@ public class MoveGridPart : MonoBehaviour
 
     }
 
-    public string Text;
+    public string Text; // -
 
 
     private void OnEnable()
@@ -66,31 +62,9 @@ public class MoveGridPart : MonoBehaviour
     }
 
 
-    private void Update()
-    {
-        if (_showDirection)
-        {
-            for (int i = 0; i < _availableDirection.Count; i++)
-            {
-                Debug.Log(_availableDirection[i]);
-            }
-
-            _showDirection = false;
-        }
-    }
-
-
     public void UpdateState(bool isAllowMoveTo)
     {
         _spriteRenderer.gameObject.SetActive(isAllowMoveTo);
-    }
-
-
-    public void MoveTo()
-    {
-        //OnMoveTo(this);
-
-        IsWithPawn = true;
     }
 
 

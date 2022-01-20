@@ -38,12 +38,9 @@ public class GridController : MonoBehaviour
     private List<MoveGridPart> _moveGridPart;
     private List<WallGridPart> _wallGridPart;
 
-    private WallGridPart _lastWall;
-
     private Pawn _currentPawn;
 
     private int _pawnCount;
-    private int _previousCount;
 
     private bool _previousIsPlayer;
 
@@ -81,13 +78,7 @@ public class GridController : MonoBehaviour
     private void InitializeMoveGridParts()
     {
         _moveGridPart = new List<MoveGridPart>(GetComponentsInChildren<MoveGridPart>());
-
-        for (int i = 0; i < _moveGridPart.Count; i++)
-        {
-            _moveGridPart[i].OnMoveTo += MoveToGridPart;
-        }
     }
-
 
 
     private void PlaceWall(WallGridPart wallGridPart, bool isVertical, bool isMove = true)
@@ -100,14 +91,6 @@ public class GridController : MonoBehaviour
         if (isMove)
             OnMove?.Invoke();
     }
-
-
-    //public bool IsPlacementWallAllowed(Vector2Int pos)
-    //{
-
-
-    //    return false;
-    //}
 
 
     private void BlockNearMoveGrid(Vector2Int wallPos, bool isVertical)
@@ -267,6 +250,12 @@ public class GridController : MonoBehaviour
         }
 
         pawn.StartY = y;
+
+        if (y == 9)
+            pawn.EndY = 1;
+        if (y == 1)
+            pawn.EndY = 9;
+
         pawn.SetUp(_pawnMaterial[_pawnCount % _pawnMaterial.Length], gridPart, isPlayer);
         pawn.name = $"{pawn.GetType().Name}_{_pawnCount}";
 
@@ -281,6 +270,11 @@ public class GridController : MonoBehaviour
         _currentPawn.MoveToPart(nextGridPart);
 
         nextGridPart.IsWithPawn = true;
+
+        if (_currentPawn.EndY == _currentPawn.PawnPos.y)
+        {
+            EndGame.Instance.OnWin(_currentPawn.PawnColor);
+        }
 
         OnMove?.Invoke();
     }
@@ -323,22 +317,16 @@ public class GridController : MonoBehaviour
 
         MoveGridPart currentMovePart = GetGridPart(pawn.PawnPos);
 
-        var isMove = Random.value > 0.99f;
-
+        var isMove = Random.value > 0.2f;
         var isVertical = Random.value > 0.5f;
 
         if (pawn.VerticalWallPlaced >= 10 && isVertical)
-        {
             isMove = true;
-        }
         else if (pawn.VerticalWallPlaced < 10 && isVertical)
             pawn.VerticalWallPlaced++;
 
-
         if (pawn.HorizontalWallPlaced >= 10 && !isVertical)
-        {
             isMove = true;
-        }
         else if (pawn.HorizontalWallPlaced < 10 && !isVertical)
             pawn.HorizontalWallPlaced++;
 
@@ -355,8 +343,6 @@ public class GridController : MonoBehaviour
 
                 copy.PlaceWall(wall, isVertical, false);
 
-                _lastWall = wall;
-
                 MoveGridPart playerGrid = copy.MoveGridPart.FindAll(e => e.IsWithPawn && e.GridPos != currentMovePart.GridPos).FirstOrDefault();
 
                 var playerPawn = copy.CurrentPawn.FindAll(e => e.PawnPos == playerGrid.GridPos).FirstOrDefault();
@@ -364,8 +350,6 @@ public class GridController : MonoBehaviour
 
                 var nextMoveEnemy = ai.RunMove(currentMovePart, copy.MoveGridPart, pathFinding, false, playerPawn.StartY);
                 var nextMovePlayer = ai.RunMove(playerGrid, copy.MoveGridPart, pathFinding, true, computerPawn.StartY);
-
-                _previousCount = nextMoveEnemy.Count + nextMovePlayer.Count;
 
                 if (nextMoveEnemy != null && nextMovePlayer != null)
                 {
@@ -400,7 +384,6 @@ public class GridController : MonoBehaviour
 
             MoveToGridPart(nextMoveGrid);
         }
-
     }
 
 
@@ -408,22 +391,8 @@ public class GridController : MonoBehaviour
     {
         GridController copy = (GridController)this.MemberwiseClone();
 
-        //List<MoveGridPart> copyGrd = new List<MoveGridPart>(_moveGridPart);
-
-        //var copyMoveGrid = _moveGridPart.Select(e => e).ToList();
-        //var copyMoveGrid = _moveGridPart.ConvertAll(e => new MoveGridPart());
-
         copy.MoveGridPart = new List<MoveGridPart>(_moveGridPart);
-
-        //copy.MoveGridPart = _moveGridPart;
-
-        //var copyWallGrid = _wallGridPart.Select(e => e).ToList();
-        //var copyWallGrid = _wallGridPart.ConvertAll(e => new WallGridPart());
-
         copy.WallGridPart = new List<WallGridPart>(_wallGridPart);
-
-        //var copyCurrentPawn = _pawn.ConvertAll(e => new Pawn());
-
         copy.CurrentPawn = _pawn;
 
         return copy;
@@ -450,13 +419,6 @@ public class GridController : MonoBehaviour
                     _moveGridPart[i].UpdateState(false);
             }
         }
-    }
-
-
-    public Pawn GetPawn(int pawnIndex)
-    {
-
-        return _pawn[pawnIndex];
     }
 
 

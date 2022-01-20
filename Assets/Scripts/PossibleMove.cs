@@ -113,7 +113,6 @@ public static class PossibleMove
             }
         }
 
-        //Debug.Log(
 
         return result;
     }
