@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 2138677392}
-  m_IndirectSpecularColor: {r: 0.4505779, g: 0.50055504, b: 0.57505476, a: 1}
+  m_IndirectSpecularColor: {r: 0.4505775, g: 0.50055474, b: 0.575054, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -3974,7 +3974,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _ghostWallPrefab: {fileID: 8319493017571854084, guid: d7ac3da45448a1d4fa066a0c69f352c7, type: 3}
   _wallPrefab: {fileID: 4108401030471917266, guid: b0b9d149a4dbba147a7354cbefc483b1, type: 3}
-  _gridController: {fileID: 0}
+  _gridController: {fileID: 1172585938}
 --- !u!1001 &719056621
 PrefabInstance:
   m_ObjectHideFlags: 0
