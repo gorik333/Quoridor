@@ -81,7 +81,7 @@ public class GridController : MonoBehaviour
     }
 
 
-    private void PlaceWall(WallGridPart wallGridPart, bool isVertical, bool isMove = true)
+    public void PlaceWall(WallGridPart wallGridPart, bool isVertical, bool isMove = true)
     {
         var pos = wallGridPart.GridPos;
 
@@ -293,7 +293,7 @@ public class GridController : MonoBehaviour
 
     public void PlayerMove(MoveGridPart nextGridPart)
     {
-        MoveGridPart currentMoveGrid = GetGridPart(_currentPawn.PawnPos);
+        MoveGridPart currentMoveGrid = GetMoveGrid(_currentPawn.PawnPos);
 
         var possibleMoves = PossibleMove.GetPossibleMoves(_moveGridPart, currentMoveGrid);
 
@@ -315,7 +315,7 @@ public class GridController : MonoBehaviour
     {
         yield return new WaitForSeconds(0);
 
-        MoveGridPart currentMovePart = GetGridPart(pawn.PawnPos);
+        MoveGridPart currentMovePart = GetMoveGrid(pawn.PawnPos);
 
         var isMove = Random.value > 0.2f;
         var isVertical = Random.value > 0.5f;
@@ -380,14 +380,14 @@ public class GridController : MonoBehaviour
             }
 
             var randMove = Random.Range(0, moves.Count);
-            var nextMoveGrid = GetGridPart(moves[randMove]);
+            var nextMoveGrid = GetMoveGrid(moves[randMove]);
 
             MoveToGridPart(nextMoveGrid);
         }
     }
 
 
-    private GridController GridControllerCopy()
+    public GridController GridControllerCopy()
     {
         GridController copy = (GridController)this.MemberwiseClone();
 
@@ -401,7 +401,7 @@ public class GridController : MonoBehaviour
 
     private void UnlockPossibleMoves(Pawn pawn)
     {
-        MoveGridPart currentMoveGrid = GetGridPart(pawn.PawnPos);
+        MoveGridPart currentMoveGrid = GetMoveGrid(pawn.PawnPos);
 
         var possibleMoves = PossibleMove.GetPossibleMoves(_moveGridPart, currentMoveGrid);
 
@@ -422,7 +422,7 @@ public class GridController : MonoBehaviour
     }
 
 
-    private MoveGridPart GetGridPart(Vector2Int pos)
+    public MoveGridPart GetMoveGrid(Vector2Int pos)
     {
         for (int i = 0; i < _moveGridPart.Count; i++)
         {
@@ -436,7 +436,13 @@ public class GridController : MonoBehaviour
     }
 
 
-    private WallGridPart GetRandomWallGridPart(bool isVertical)
+    public Pawn GetCurrentPawn(int currentPawn)
+    {
+        return _pawn[currentPawn];
+    }
+
+
+    public WallGridPart GetRandomWallGridPart(bool isVertical)
     {
         var wallGridParts = new List<WallGridPart>();
 

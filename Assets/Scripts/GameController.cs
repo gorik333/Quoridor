@@ -14,6 +14,14 @@ public class GameController : MonoBehaviour
 
     private Coroutine _prevMove;
 
+    public static GameController Instance { get; private set; }
+
+
+    private void Awake()
+    {
+        Instance = this;
+    }
+
 
     private void OnEnable()
     {
@@ -54,5 +62,13 @@ public class GameController : MonoBehaviour
         }
 
         _grid.PawnMoveQueue(_currentPlayer++);
+
+        if (_currentPlayer >= _playerCount)
+        {
+            _currentPlayer = 0;
+        }
     }
+
+   
+    public int CurrentPlayer { get => _currentPlayer; }
 }

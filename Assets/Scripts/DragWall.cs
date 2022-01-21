@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class DragWall : MonoBehaviour
 {
@@ -101,9 +102,45 @@ public class DragWall : MonoBehaviour
 
     private void PlaceWall()
     {
-        _currentGrid.PlaceWall(_isVertical);
+        int currentPlayer = GameController.Instance.CurrentPlayer;
 
-        DestroyGhostWall();
+        var currentPawn = _gridController.GetCurrentPawn(currentPlayer);
+
+        var currentMovePart = _gridController.GetMoveGrid(currentPawn.PawnPos);
+
+        var wall = _gridController.GetRandomWallGridPart(_isVertical);
+        var ai = new Assets.Scripts.AI.AI();
+        var pathFinding = new Assets.Scripts.AI.Pathfinding();
+
+        if (wall != null)
+        {
+            var copy = _gridController.GridControllerCopy();
+
+            copy.PlaceWall(wall, _isVertical, false);
+
+            MoveGridPart playerGrid = copy.MoveGridPart.FindAll(e => e.IsWithPawn && e.GridPos != currentMovePart.GridPos).FirstOrDefault();
+
+            var playerPawn = copy.CurrentPawn.FindAll(e => e.PawnPos == playerGrid.GridPos).FirstOrDefault();
+            var computerPawn = copy.CurrentPawn.FindAll(e => e.PawnPos == currentMovePart.GridPos).FirstOrDefault();
+
+            var nextMoveEnemy = ai.RunMove(currentMovePart, copy.MoveGridPart, pathFinding, false, playerPawn.StartY);
+            var nextMovePlayer = ai.RunMove(playerGrid, copy.MoveGridPart, pathFinding, true, computerPawn.StartY);
+
+            if (nextMoveEnemy != null && nextMovePlayer != null)
+            {
+                if (nextMoveEnemy.Count != 0 && nextMovePlayer.Count != 0)
+                {
+                    _currentGrid.PlaceWall(_isVertical);
+
+                    DestroyGhostWall();
+                    //wall.PlaceWall(_isVertical);
+                }
+            }
+        }
+
+        //_currentGrid.PlaceWall(_isVertical);
+
+        //DestroyGhostWall();
     }
 
 
