@@ -361,18 +361,18 @@ public class GridController : MonoBehaviour
 
         MoveGridPart currentMovePart = GetMoveGrid(pawn.PawnPos);
 
-        var isMove = Random.value > 0.2f;
+        var isMove = Random.value > 0.3f;
         var isVertical = Random.value > 0.5f;
 
-        if (pawn.VerticalWallPlaced >= 10 && isVertical)
+        if (pawn.VerticalWallPlaced >= 10/* && isVertical*/)
             isMove = true;
-        else if (pawn.VerticalWallPlaced < 10 && isVertical)
+        else if (pawn.VerticalWallPlaced < 10/* && isVertical*/)
             pawn.VerticalWallPlaced++;
 
-        if (pawn.HorizontalWallPlaced >= 10 && !isVertical)
-            isMove = true;
-        else if (pawn.HorizontalWallPlaced < 10 && !isVertical)
-            pawn.HorizontalWallPlaced++;
+        //if (pawn.HorizontalWallPlaced >= 10 && !isVertical)
+        //    isMove = true;
+        //else if (pawn.HorizontalWallPlaced < 10 && !isVertical)
+        //    pawn.HorizontalWallPlaced++;
 
 
         if (!isMove)
