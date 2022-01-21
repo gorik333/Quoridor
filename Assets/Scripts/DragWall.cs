@@ -108,7 +108,9 @@ public class DragWall : MonoBehaviour
 
         var currentMovePart = _gridController.GetMoveGrid(currentPawn.PawnPos);
 
-        var wall = _gridController.GetRandomWallGridPart(_isVertical);
+        var wall = _currentGrid;
+        //var wall = _gridController.GetRandomWallGridPart(_isVertical);
+
         var ai = new Assets.Scripts.AI.AI();
         var pathFinding = new Assets.Scripts.AI.Pathfinding();
 
@@ -132,9 +134,31 @@ public class DragWall : MonoBehaviour
                 {
                     _currentGrid.PlaceWall(_isVertical);
 
+                    //copy.ResetWall(wall.GridPos);
+
                     DestroyGhostWall();
                     //wall.PlaceWall(_isVertical);
                 }
+                else
+                {
+                    DestroyGhostWall();
+
+                    Debug.Log(wall.GridPos);
+
+                    _gridController.ResetWall(wall.GridPos, wall.IsVertical);
+
+                    Debug.Log("Worked else");
+                }
+            }
+            else
+            {
+                DestroyGhostWall();
+
+                Debug.Log(wall.GridPos);
+
+                _gridController.ResetWall(wall.GridPos, wall.IsVertical);
+
+                Debug.Log("Worked else");
             }
         }
 

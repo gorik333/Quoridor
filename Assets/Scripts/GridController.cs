@@ -93,6 +93,50 @@ public class GridController : MonoBehaviour
     }
 
 
+    public void ResetWall(Vector2Int wallPos, bool isVertical)
+    {
+        var wall = GetWallGrid(wallPos);
+
+        UnlockNearWallDrid(wallPos, isVertical);
+
+        UnblockNearMoveGrid(wall, isVertical);
+
+        wall.IsVerticalAllow = isVertical;
+        wall.IsHorizontalAllow = !isVertical;
+    }
+
+
+    private void UnlockNearWallDrid(Vector2Int wallPos, bool isVertical)
+    {
+        if (!isVertical)
+        {
+            var firstPos = new Vector2Int(wallPos.x + 1, wallPos.y);
+            var secondPos = new Vector2Int(wallPos.x - 1, wallPos.y);
+
+            var firstWall = GetWallGrid(firstPos);
+            var secondWall = GetWallGrid(secondPos);
+
+            if (firstWall != null)
+                firstWall.IsHorizontalAllow = true;
+            if (secondWall != null)
+                secondWall.IsHorizontalAllow = true;
+        }
+        else
+        {
+            var firstPos = new Vector2Int(wallPos.x, wallPos.y + 1);
+            var secondPos = new Vector2Int(wallPos.x, wallPos.y - 1);
+
+            var firstWall = GetWallGrid(firstPos);
+            var secondWall = GetWallGrid(secondPos);
+
+            if (firstWall != null)
+                firstWall.IsVerticalAllow = true;
+            if (secondWall != null)
+                secondWall.IsVerticalAllow = true;
+        }
+    }
+
+
     private void BlockNearMoveGrid(Vector2Int wallPos, bool isVertical)
     {
         var blockedWays = new List<GridParam>();
@@ -201,8 +245,8 @@ public class GridController : MonoBehaviour
     {
         _spawnPos = new List<Vector2Int>();
 
-        _spawnPos.Add(new Vector2Int(5, 1)); // BOTTOM CENTER GRID PART  5 = W, 1 = H  
-        _spawnPos.Add(new Vector2Int(5, 9)); // TOP CENTER GRID PART     5 = W, 9 = H
+        _spawnPos.Add(new Vector2Int(5, 9)); // BOTTOM CENTER GRID PART  5 = W, 1 = H  
+        _spawnPos.Add(new Vector2Int(5, 1)); // TOP CENTER GRID PART     5 = W, 9 = H
     }
 
 
@@ -396,6 +440,19 @@ public class GridController : MonoBehaviour
         copy.CurrentPawn = _pawn;
 
         return copy;
+    }
+
+
+    private WallGridPart GetWallGrid(Vector2Int pos)
+    {
+        for (int i = 0; i < _wallGridPart.Count; i++)
+        {
+            if (_wallGridPart[i].GridPos == pos)
+                return _wallGridPart[i];
+        }
+
+
+        return null;
     }
 
 

@@ -44,6 +44,20 @@ public class MoveGridPart : MonoBehaviour
     }
 
 
+    private void Update()
+    {
+        if (_showDirection)
+        {
+            for (int i = 0; i < _availableDirection.Count; i++)
+            {
+                Debug.Log(_availableDirection[i]);
+            }
+
+            _showDirection = false;
+        }
+    }
+
+
     public void OnStart()
     {
         _availableDirection = new List<Direction>();

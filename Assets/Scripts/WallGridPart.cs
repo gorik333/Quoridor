@@ -30,6 +30,8 @@ public class WallGridPart : MonoBehaviour
 
     private GameObject _wallSpawned;
 
+    private bool _isVertical;
+
     public event Place OnPlace;
     public delegate void Place(WallGridPart wallGridPart, bool isVertical, bool isMove = true);
 
@@ -64,6 +66,9 @@ public class WallGridPart : MonoBehaviour
     {
         var originalWall = Instantiate(_wallPrefab, _wallPrefab.transform.position, GetWallRotation(isVertical));
 
+        //Debug.Log($"Wall placed:  X -->  {GridPos.x},  Y --> {GridPos.y}");
+
+        _isVertical = isVertical;
         _wallSpawned = originalWall;
 
         OnPlace(this, isVertical);
@@ -97,9 +102,15 @@ public class WallGridPart : MonoBehaviour
     public void DisallowPlacement(bool isVertical)
     {
         if (isVertical)
+        {
+            //Debug.Log($"Blocked vertical:  X -->  {GridPos.x},  Y --> {GridPos.y}");
             _isVerticalAllow = false;
+        }
         else
+        {
+            //Debug.Log($"Blocked horizontal:  X -->  {GridPos.x},  Y --> {GridPos.y}");
             _isHorizontalAllow = false;
+        }
 
         if (!_isVerticalAllow && !_isHorizontalAllow)
             _wallCollider.enabled = false;
@@ -130,10 +141,11 @@ public class WallGridPart : MonoBehaviour
 
     public Vector3 WallPlacePos { get => _wallPlacePos.position; }
 
-    public bool IsVerticalAllow { get => _isVerticalAllow; }
 
-    public bool IsHorizontalAllow { get => _isHorizontalAllow; }
     public BoxCollider WallCollider { get => _wallCollider; set => _wallCollider = value; }
     public Transform WallPlacePos1 { get => _wallPlacePos; set => _wallPlacePos = value; }
     public GameObject WallPrefab { get => _wallPrefab; set => _wallPrefab = value; }
+    public bool IsHorizontalAllow { get => _isHorizontalAllow; set => _isHorizontalAllow = value; }
+    public bool IsVerticalAllow { get => _isVerticalAllow; set => _isVerticalAllow = value; }
+    public bool IsVertical { get => _isVertical; set => _isVertical = value; }
 }
